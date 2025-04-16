@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <string.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -45,7 +45,7 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-char rx_data;
+char rx_data[6];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,7 +96,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start_IT(&htim2);
-  HAL_UART_Receive_IT(&huart1, &rx_data, 1);
+  HAL_UART_Receive_IT(&huart1, (uint8_t*)rx_data, sizeof(rx_data));
 
   /* USER CODE END 2 */
 
@@ -267,23 +267,25 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-
-            if (rx_data == '1')
-            {
+    	char itog[]={'q','w','e','r','t','y'};
+    	if (memcmp(itog, rx_data, sizeof(itog)) == 0)
+    	{
 GPIOC -> ODR ^= (1<<13);
             }
-        // Перезапускаем приём следующего байта
-        HAL_UART_Receive_IT(&huart1, &rx_data, 1);
+        // Перезапускаем приёма
+        HAL_UART_Receive_IT(&huart1, (uint8_t*)rx_data, sizeof(rx_data));
+
     }
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	char msg[]="1";
+	char msg[]={'q','w','e','r','t','y'};
+	int length = strlen(msg);
     if (htim->Instance == TIM2)
     {
     	//HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-    	HAL_UART_Transmit_IT(&huart1, (uint8_t*)msg, strlen(msg));
+    	HAL_UART_Transmit_IT(&huart1, (uint8_t*)msg, length);
     }
 }
 /* USER CODE END 4 */
