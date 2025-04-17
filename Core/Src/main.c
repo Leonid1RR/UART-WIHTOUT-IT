@@ -45,7 +45,8 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-char rx_data[6];
+char msg[]="iop";//можно менять, но кол-во символов
+char rx_data[3];//должно совпадать с размером массива
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -267,11 +268,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-    	char itog[]={'q','w','e','r','t','y'};
-    	if (memcmp(itog, rx_data, sizeof(itog)) == 0)
+    	//char itog[]={'q','w','e','r','t','y'}; - работает
+    	//char itog[]="qwerty"; - тоже работает
+    	if (memcmp(msg, rx_data, sizeof(rx_data)) == 0)
     	{
-GPIOC -> ODR ^= (1<<13);
+    		GPIOC -> ODR ^= (1<<13);
             }
+    	// очистка
+    	for(int i = 0; i<sizeof(rx_data); i++){
+    		rx_data[i]='0';
+    	}
+
         // Перезапускаем приёма
         HAL_UART_Receive_IT(&huart1, (uint8_t*)rx_data, sizeof(rx_data));
 
@@ -280,7 +287,7 @@ GPIOC -> ODR ^= (1<<13);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	char msg[]={'q','w','e','r','t','y'};
+	//char msg[]={'q','w','e','r','t','y'}; - работает
 	int length = strlen(msg);
     if (htim->Instance == TIM2)
     {
